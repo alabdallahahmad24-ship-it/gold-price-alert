@@ -1,7 +1,7 @@
 notify_email: ''
 thresholds:
   above:
-  - 4550
+  - 4450
   below:
   - 4000
   - 3900
