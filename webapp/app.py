@@ -2,7 +2,6 @@
 
 import streamlit as st
 import yaml
-import pandas as pd
 import requests as req
 from github import Github
 
@@ -40,55 +39,29 @@ except Exception as e:
     st.stop()
 
 
-# --- Goldpreis abrufen (ohne yfinance, direkt via Yahoo Finance API) ---
+# --- Goldpreis abrufen ---
 @st.cache_data(ttl=900)
-def get_gold_data():
-    """Goldpreis in EUR via Yahoo Finance REST API (kein yfinance noetig)."""
+def get_gold_price():
+    """Aktueller Goldpreis in EUR via Yahoo Finance REST API."""
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
         base = "https://query1.finance.yahoo.com/v8/finance/chart"
 
-        # Gold USD (30 Tage, taeglich)
-        gold_resp = req.get(
-            f"{base}/GC=F",
-            params={"range": "30d", "interval": "1d"},
-            headers=headers, timeout=10
-        )
-        eur_resp = req.get(
-            f"{base}/EURUSD=X",
-            params={"range": "30d", "interval": "1d"},
-            headers=headers, timeout=10
-        )
+        gold_resp = req.get(f"{base}/GC=F", params={"range": "1d", "interval": "1d"}, headers=headers, timeout=10)
+        eur_resp = req.get(f"{base}/EURUSD=X", params={"range": "1d", "interval": "1d"}, headers=headers, timeout=10)
 
         if gold_resp.status_code != 200 or eur_resp.status_code != 200:
-            return None, None
+            return None
 
-        gold_data = gold_resp.json()["chart"]["result"][0]
-        eur_data = eur_resp.json()["chart"]["result"][0]
+        gold_usd = gold_resp.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"][-1]
+        eur_usd = eur_resp.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"][-1]
 
-        gold_timestamps = gold_data["timestamp"]
-        gold_closes = gold_data["indicators"]["quote"][0]["close"]
-        eur_timestamps = eur_data["timestamp"]
-        eur_closes = eur_data["indicators"]["quote"][0]["close"]
-
-        # DataFrames erstellen und sauber joinen
-        gold_df = pd.DataFrame({"gold_usd": gold_closes}, index=pd.to_datetime(gold_timestamps, unit="s").date)
-        eur_df = pd.DataFrame({"eur_usd": eur_closes}, index=pd.to_datetime(eur_timestamps, unit="s").date)
-
-        merged = gold_df.join(eur_df, how="inner").dropna()
-        merged["gold_eur"] = merged["gold_usd"] / merged["eur_usd"]
-
-        series = merged["gold_eur"]
-        series.index = pd.to_datetime(series.index)
-        current_price = float(series.iloc[-1])
-
-        return current_price, series
-
+        return gold_usd / eur_usd
     except Exception:
-        return None, None
+        return None
 
 
-current_price, price_history = get_gold_data()
+current_price = get_gold_price()
 
 # --- Header ---
 st.title("\U0001fa99 Gold-Preis Benachrichtigungen")
@@ -96,7 +69,7 @@ st.title("\U0001fa99 Gold-Preis Benachrichtigungen")
 if current_price is not None:
     st.metric("Aktueller Goldpreis", f"{current_price:,.2f} EUR")
 else:
-    st.info("Goldpreis konnte gerade nicht abgerufen werden. Schwellenwerte kannst du trotzdem bearbeiten.")
+    st.info("Goldpreis konnte gerade nicht abgerufen werden.")
 
 
 # --- Config laden ---
@@ -110,21 +83,6 @@ except Exception as e:
 thresholds = config.get("thresholds", {})
 below_vals = thresholds.get("below", [])
 above_vals = thresholds.get("above", [])
-
-
-# --- Preis-Chart ---
-if price_history is not None:
-    st.subheader("Preis-Verlauf (30 Tage)")
-
-    chart_df = pd.DataFrame({"Goldpreis EUR": price_history})
-
-    # Schwellenwerte als horizontale Referenzlinien
-    for val in below_vals:
-        chart_df[f"Unter {val}"] = val
-    for val in above_vals:
-        chart_df[f"Ueber {val}"] = val
-
-    st.line_chart(chart_df)
 
 st.markdown("---")
 
