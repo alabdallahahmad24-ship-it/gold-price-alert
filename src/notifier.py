@@ -58,16 +58,26 @@ def send_gmail(subject: str, body: str) -> bool:
         return False
 
 
-def notify(threshold: float, price: float) -> bool:
-    """Sendet Benachrichtigung: WhatsApp zuerst, Gmail nur als Fallback."""
-    message = (
-        f"⚠️ Gold-Alarm: Preis unter {threshold:.0f} EUR!\n"
-        f"Aktueller Preis: {price:.2f} EUR"
-    )
+def notify(threshold: float, price: float, direction: str) -> bool:
+    """Sendet Benachrichtigung: WhatsApp zuerst, Gmail nur als Fallback.
+
+    direction: "below" für Unterschreitung, "above" für Überschreitung
+    """
+    if direction == "below":
+        message = (
+            f"⚠️ Gold-Alarm: Preis unter {threshold:.0f} EUR gefallen!\n"
+            f"Aktueller Preis: {price:.2f} EUR"
+        )
+        subject = f"Gold-Alarm: Preis unter {threshold:.0f} EUR"
+    else:
+        message = (
+            f"📈 Gold-Alarm: Preis über {threshold:.0f} EUR gestiegen!\n"
+            f"Aktueller Preis: {price:.2f} EUR"
+        )
+        subject = f"Gold-Alarm: Preis über {threshold:.0f} EUR"
 
     if send_whatsapp(message):
         return True
 
     print("WhatsApp fehlgeschlagen, versuche Gmail-Fallback...")
-    subject = f"Gold-Alarm: Preis unter {threshold:.0f} EUR"
     return send_gmail(subject, message)

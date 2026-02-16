@@ -19,12 +19,15 @@ def main():
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
-    thresholds = config.get("thresholds", [])
-    if not thresholds:
+    thresholds = config.get("thresholds", {})
+    below = thresholds.get("below", [])
+    above = thresholds.get("above", [])
+
+    if not below and not above:
         print("FEHLER: Keine Schwellenwerte in config.yml definiert")
         sys.exit(1)
 
-    print(f"Schwellenwerte: {thresholds}")
+    print(f"Schwellenwerte - Unter: {below}, Über: {above}")
 
     # Goldpreis abrufen
     price = fetch_gold_price_eur()
