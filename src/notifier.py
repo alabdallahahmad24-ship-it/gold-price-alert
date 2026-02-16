@@ -61,9 +61,16 @@ def send_gmail(subject: str, body: str) -> bool:
 def notify(threshold: float, price: float, direction: str) -> bool:
     """Sendet Benachrichtigung: WhatsApp zuerst, Gmail nur als Fallback.
 
-    direction: "below" für Unterschreitung, "above" für Überschreitung
+    direction: "below", "above", oder "test"
     """
-    if direction == "below":
+    if direction == "test":
+        message = (
+            f"✅ Test-Benachrichtigung\n"
+            f"Aktueller Goldpreis: {price:.2f} EUR\n"
+            f"Das System funktioniert!"
+        )
+        subject = "Gold-Alert: Test-Benachrichtigung"
+    elif direction == "below":
         message = (
             f"⚠️ Gold-Alarm: Preis unter {threshold:.0f} EUR gefallen!\n"
             f"Aktueller Preis: {price:.2f} EUR"

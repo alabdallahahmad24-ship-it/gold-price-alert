@@ -4,7 +4,12 @@ on:
   schedule:
     # Alle 15 Minuten (Mo-Fr, 6-22 Uhr UTC = 7-23 Uhr MEZ)
     - cron: "*/15 6-22 * * 1-5"
-  workflow_dispatch: # Manuelles Auslösen ermöglichen
+  workflow_dispatch:
+    inputs:
+      force_test:
+        description: "Test-Email senden (ignoriert Schwellenwerte)"
+        type: boolean
+        default: false
 
 jobs:
   check-price:
@@ -34,6 +39,7 @@ jobs:
           CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          FORCE_TEST: ${{ inputs.force_test }}
         run: python -m src.main
 
       - name: Save state

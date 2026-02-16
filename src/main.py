@@ -10,10 +10,27 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.price_fetcher import fetch_gold_price_eur
 from src.alert_checker import check_thresholds
+from src.notifier import notify
 from src.state_manager import load_state, save_state
 
 
 def main():
+    # Goldpreis abrufen
+    price = fetch_gold_price_eur()
+    if price is None:
+        print("FEHLER: Goldpreis konnte nicht abgerufen werden")
+        sys.exit(1)
+
+    # Force-Test: Sendet sofort eine Test-Email, unabhängig von Schwellenwerten
+    if os.environ.get("FORCE_TEST", "").lower() == "true":
+        print("=== FORCE TEST: Sende Test-Email ===")
+        success = notify(price, price, "test")
+        if success:
+            print("Test-Email erfolgreich gesendet!")
+        else:
+            print("FEHLER: Test-Email konnte nicht gesendet werden")
+        return
+
     # Config laden
     config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.yml")
     with open(config_path, "r") as f:
@@ -28,12 +45,6 @@ def main():
         sys.exit(1)
 
     print(f"Schwellenwerte - Unter: {below}, Über: {above}")
-
-    # Goldpreis abrufen
-    price = fetch_gold_price_eur()
-    if price is None:
-        print("FEHLER: Goldpreis konnte nicht abgerufen werden")
-        sys.exit(1)
 
     # State laden, Schwellenwerte prüfen, State speichern
     state = load_state()
