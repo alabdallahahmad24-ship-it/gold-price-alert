@@ -1,13 +1,8 @@
-# Goldpreis-Schwellenwerte in EUR
-# Jeder Schwellenwert löst nur EINMAL eine Benachrichtigung aus
+notify_email: ''
 thresholds:
-  below:  # Benachrichtigung wenn Preis UNTER diesen Wert fällt
-    - 3800
-    - 3900
-    - 4000
-  above:  # Benachrichtigung wenn Preis ÜBER diesen Wert steigt
-    - 4500
-
-# Empfänger-E-Mail für Gmail-Fallback (optional)
-# Wenn leer, wird die GMAIL_ADDRESS als Empfänger genutzt
-notify_email: ""
+  above:
+  - 4500
+  below:
+  - 4000
+  - 3900
+  - 3800
