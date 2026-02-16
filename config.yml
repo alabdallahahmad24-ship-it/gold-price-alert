@@ -4,6 +4,7 @@ thresholds:
   - 3800
   - 3900
   - 4000
+  - 4500  # TEST: Liegt über aktuellem Preis für Test-Benachrichtigung
 
 # Empfänger-E-Mail für Gmail-Fallback (optional)
 # Wenn leer, wird die GMAIL_ADDRESS als Empfänger genutzt
