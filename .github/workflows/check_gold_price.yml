@@ -1,0 +1,43 @@
+name: Gold Price Check
+
+on:
+  schedule:
+    # Alle 15 Minuten (Mo-Fr, 6-22 Uhr UTC = 7-23 Uhr MEZ)
+    - cron: "*/15 6-22 * * 1-5"
+  workflow_dispatch: # Manuelles Auslösen ermöglichen
+
+jobs:
+  check-price:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore state
+        uses: actions/cache/restore@v4
+        with:
+          path: state.json
+          key: gold-alert-state
+
+      - name: Check gold price
+        env:
+          CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python -m src.main
+
+      - name: Save state
+        uses: actions/cache/save@v4
+        with:
+          path: state.json
+          key: gold-alert-state-${{ github.run_id }}

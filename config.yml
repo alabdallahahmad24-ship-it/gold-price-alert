@@ -1,0 +1,10 @@
+# Goldpreis-Schwellenwerte in EUR
+# Bei Unterschreitung wird eine Benachrichtigung gesendet (einmalig pro Schwelle)
+thresholds:
+  - 3800
+  - 3900
+  - 4000
+
+# Empfänger-E-Mail für Gmail-Fallback (optional)
+# Wenn leer, wird die GMAIL_ADDRESS als Empfänger genutzt
+notify_email: ""

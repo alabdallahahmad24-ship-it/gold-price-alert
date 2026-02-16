@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+
+# State file (wird von GitHub Actions Cache verwaltet)
+state.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
